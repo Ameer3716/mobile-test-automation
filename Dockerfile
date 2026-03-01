@@ -1,7 +1,7 @@
 # Test Runner Dockerfile
 # Builds the Maven project and runs tests against the Dockerized Appium server
 
-FROM maven:3.9-eclipse-temurin-11 AS builder
+FROM maven:3.9-eclipse-temurin-11
 
 WORKDIR /app
 
