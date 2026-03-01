@@ -30,14 +30,22 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Resolve dependencies
+        run: mvn dependency:resolve -B
+
       - name: Build with Maven (compile only)
         run: mvn compile -B
 
       - name: Run Maven test compile
         run: mvn test-compile -B
 
-      - name: Display build success
-        run: echo "Build completed successfully!"
+      - name: Verify framework structure
+        run: |
+          echo "=== Compiled Classes ==="
+          find target/classes -name "*.class" | head -20
+          echo "=== Compiled Test Classes ==="
+          find target/test-classes -name "*.class" | head -20
+          echo "Build and compilation completed successfully!"
 
   # Note: Full test execution requires a connected Android device/emulator
   # which is not available in standard CI environments.
