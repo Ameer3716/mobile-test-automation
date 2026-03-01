@@ -24,6 +24,15 @@ public class BaseTest {
         String appPath      = AppiumUtils.getProperty("app.path");
         String automationName = AppiumUtils.getProperty("automation.name");
 
+        // Docker support: override Appium URL from environment variables
+        String appiumHost = System.getenv("APPIUM_HOST");
+        String appiumPort = System.getenv("APPIUM_PORT");
+        if (appiumHost != null && !appiumHost.isEmpty()) {
+            appiumUrl = "http://" + appiumHost + ":" +
+                    (appiumPort != null ? appiumPort : "4723");
+            System.out.println("Using Docker Appium URL: " + appiumUrl);
+        }
+
         // Configure desired capabilities
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName(platformName);

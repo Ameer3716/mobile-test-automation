@@ -1,0 +1,54 @@
+version: "3.8"
+
+# Dockerized Appium Setup for Mobile Test Automation (Bonus)
+# Uses budtmo/docker-android which includes Android emulator + Appium server
+
+services:
+  # Android emulator with Appium server
+  appium:
+    image: budtmo/docker-android:emulator_12.0
+    container_name: android-appium
+    privileged: true
+    ports:
+      - "4723:4723"   # Appium server
+      - "6080:6080"   # noVNC (browser-based screen viewer)
+      - "5554:5554"   # ADB
+      - "5555:5555"   # ADB
+    environment:
+      EMULATOR_DEVICE: "Samsung Galaxy S10"
+      WEB_VNC: "true"
+      APPIUM: "true"
+      APPIUM_HOST: "0.0.0.0"
+      APPIUM_PORT: "4723"
+      EMULATOR_NAME: "android-emulator"
+      DATAPARTITION: "2g"
+    volumes:
+      - ./apps:/root/tmp/apps     # Mount APK folder into the container
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4723/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
+
+  # Test runner service - builds and runs tests against the Appium container
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test-runner
+    depends_on:
+      appium:
+        condition: service_healthy
+    environment:
+      APPIUM_HOST: appium
+      APPIUM_PORT: 4723
+    volumes:
+      - ./test-output:/app/test-output         # ExtentReports output
+      - ./target:/app/target                   # Maven target (surefire reports)
