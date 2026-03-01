@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Mobile Automation Test Suite" verbose="2">
+<suite name="Mobile Automation Test Suite" verbose="2" parallel="tests" thread-count="3">
+
+    <!-- ExtentReports Listener for HTML report generation (Bonus) -->
+    <listeners>
+        <listener class-name="com.automation.utils.ExtentReportManager"/>
+    </listeners>
+
+    <!-- Parallel execution: Each <test> block runs in its own thread -->
+    <!-- thread-count="3" allows all 3 test groups to execute simultaneously -->
 
     <test name="Login Tests">
         <classes>

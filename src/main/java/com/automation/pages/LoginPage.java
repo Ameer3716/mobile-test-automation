@@ -9,60 +9,72 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 
+/**
+ * Page Object for the Login screen of SauceLabs My Demo App.
+ * Encapsulates all login-related element locators and user actions.
+ */
 public class LoginPage {
 
     private AndroidDriver driver;
+    private WebDriverWait wait;
 
-    // ======= ELEMENT LOCATORS =======
-    // IMPORTANT: Replace these locators with real ones from your app
-    // Use Appium Inspector to find the correct IDs/XPaths
+    // ======= ELEMENT LOCATORS (SauceLabs My Demo App) =======
 
-    @AndroidFindBy(id = "com.your.app:id/username_field")
+    @AndroidFindBy(accessibility = "Username input field")
     private WebElement usernameField;
 
-    @AndroidFindBy(id = "com.your.app:id/password_field")
+    @AndroidFindBy(accessibility = "Password input field")
     private WebElement passwordField;
 
-    @AndroidFindBy(id = "com.your.app:id/login_button")
+    @AndroidFindBy(accessibility = "Login button")
     private WebElement loginButton;
 
-    @AndroidFindBy(id = "com.your.app:id/error_message")
+    @AndroidFindBy(xpath = "//android.widget.TextView[contains(@text,'provided credentials')]")
     private WebElement errorMessage;
 
-    @AndroidFindBy(id = "com.your.app:id/forgot_password_link")
-    private WebElement forgotPasswordLink;
+    @AndroidFindBy(xpath = "//android.widget.TextView[contains(@text,'Username is required')]")
+    private WebElement usernameRequiredError;
+
+    @AndroidFindBy(xpath = "//android.widget.TextView[contains(@text,'Password is required')]")
+    private WebElement passwordRequiredError;
 
     // ======= CONSTRUCTOR =======
     public LoginPage(AndroidDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(new AppiumFieldDecorator(driver), this);
     }
 
     // ======= PAGE ACTIONS =======
 
+    /** Enter username in the username field. */
     public void enterUsername(String username) {
+        wait.until(ExpectedConditions.visibilityOf(usernameField));
         usernameField.clear();
         usernameField.sendKeys(username);
     }
 
+    /** Enter password in the password field. */
     public void enterPassword(String password) {
         passwordField.clear();
         passwordField.sendKeys(password);
     }
 
+    /** Click the login button. */
     public void clickLoginButton() {
         loginButton.click();
     }
 
+    /** Perform full login with given credentials. */
     public void login(String username, String password) {
         enterUsername(username);
         enterPassword(password);
         clickLoginButton();
     }
 
+    /** Check if the generic error message is displayed. */
     public boolean isErrorMessageDisplayed() {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
             wait.until(ExpectedConditions.visibilityOf(errorMessage));
             return errorMessage.isDisplayed();
         } catch (Exception e) {
@@ -70,15 +82,48 @@ public class LoginPage {
         }
     }
 
+    /** Get the text of the error message. */
     public String getErrorMessageText() {
+        wait.until(ExpectedConditions.visibilityOf(errorMessage));
         return errorMessage.getText();
     }
 
-    public boolean isLoginButtonDisplayed() {
-        return loginButton.isDisplayed();
+    /** Check if username required error is shown. */
+    public boolean isUsernameRequiredErrorDisplayed() {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(usernameRequiredError));
+            return usernameRequiredError.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void clickForgotPassword() {
-        forgotPasswordLink.click();
+    /** Check if password required error is shown. */
+    public boolean isPasswordRequiredErrorDisplayed() {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(passwordRequiredError));
+            return passwordRequiredError.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Check if the login button is visible on screen. */
+    public boolean isLoginButtonDisplayed() {
+        try {
+            return loginButton.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Check if the username field is visible. */
+    public boolean isUsernameFieldDisplayed() {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(usernameField));
+            return usernameField.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
