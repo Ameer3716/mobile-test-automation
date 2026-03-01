@@ -1,4 +1,4 @@
-﻿package com.automation.pages;
+package com.automation.pages;
 
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.pagefactory.AndroidFindBy;
