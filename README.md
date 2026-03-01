@@ -9,6 +9,7 @@ A comprehensive mobile test automation framework for the **SauceLabs My Demo App
 - **Parallel test execution** via TestNG (`parallel="tests"`, `thread-count="3"`)
 - **HTML test reports** using ExtentReports + Maven Surefire Reports
 - **CI/CD pipeline** with GitHub Actions (build on every push and PR)
+- **Dockerized Appium** setup with Android emulator (Bonus)
 - **Configuration-driven** setup via `config.properties`
 
 ---
@@ -25,6 +26,7 @@ A comprehensive mobile test automation framework for the **SauceLabs My Demo App
 | Selenium | 4.15.0 | WebDriver API (Appium dependency) |
 | UiAutomator2 | Latest | Android automation driver |
 | ExtentReports | 5.1.1 | HTML test report generation |
+| Docker | Latest | Containerized Appium + emulator |
 | GitHub Actions | - | Continuous Integration pipeline |
 | Git | Latest | Version control |
 
@@ -55,6 +57,9 @@ mobile-test-automation/
 │       ├── LoginTests.java        # TC01-TC04: Login scenarios
 │       ├── NavigationTests.java   # TC05-TC07: Navigation scenarios
 │       └── FeatureTests.java      # TC08-TC10: Cart & product features
+├── docker-compose.yml             # Dockerized Appium setup (Bonus)
+├── Dockerfile                     # Test runner container
+├── .dockerignore                  # Docker build exclusions
 ├── testng.xml                     # TestNG suite (parallel config)
 ├── pom.xml                        # Maven dependencies & plugins
 └── README.md                      # This file
@@ -64,20 +69,17 @@ mobile-test-automation/
 
 ## Prerequisites
 
-Before running tests, ensure you have the following installed:
-
+### Option A: Local Setup
 1. **Java JDK 11** — [Download](https://adoptium.net/)
 2. **Apache Maven 3.x** — [Download](https://maven.apache.org/download.cgi)
 3. **Android SDK** — via [Android Studio](https://developer.android.com/studio)
-4. **Appium Server 2.x** — Install via npm:
-   ```bash
-   npm install -g appium
-   ```
-5. **UiAutomator2 Driver** — Install via Appium:
-   ```bash
-   appium driver install uiautomator2
-   ```
-6. **Android Emulator** (or a physical device connected via USB)
+4. **Appium Server 2.x** — `npm install -g appium`
+5. **UiAutomator2 Driver** — `appium driver install uiautomator2`
+6. **Android Emulator** or physical device
+
+### Option B: Docker Setup (Bonus)
+1. **Docker Desktop** — [Download](https://www.docker.com/products/docker-desktop/)
+2. **Docker Compose** — Included with Docker Desktop
 
 ---
 
@@ -89,59 +91,70 @@ git clone https://github.com/Ameer3716/mobile-test-automation.git
 cd mobile-test-automation
 ```
 
-### 2. Install Dependencies
+### 2a. Local Setup
 ```bash
+# Install dependencies
 mvn clean install -DskipTests
-```
 
-### 3. Configure Your Device
-Edit `config/config.properties`:
-```properties
-device.name=emulator-5554       # Your emulator or device name
-platform.version=12.0            # Your Android version
-app.path=apps/SauceLabs-My-Demo-App.apk
-appium.server.url=http://127.0.0.1:4723
-```
-
-### 4. Start Appium Server
-```bash
+# Configure your device in config/config.properties
+# Start Appium server
 appium
+
+# Start Android Emulator (separate terminal)
+emulator -avd <your_avd_name>
+
+# Run tests
+mvn test
 ```
 
-### 5. Start Android Emulator
-Open Android Studio → Device Manager → Start your AVD  
-Or via command line:
+### 2b. Docker Setup (Bonus — Recommended)
 ```bash
-emulator -avd <your_avd_name>
+# Start Appium + Android emulator in Docker and run tests
+docker-compose up --build
+
+# View the Android emulator screen in your browser
+# Open: http://localhost:6080
+
+# Stop containers when done
+docker-compose down
 ```
 
 ---
 
-## How to Run Tests Locally
+## How to Run Tests
 
-### Run all tests:
+### Local Execution
 ```bash
+# Run all tests
 mvn test
-```
 
-### Run a specific test class:
-```bash
+# Run a specific test class
 mvn test -Dtest=LoginTests
 mvn test -Dtest=NavigationTests
 mvn test -Dtest=FeatureTests
-```
 
-### Run and generate Surefire HTML report:
-```bash
+# Run and generate Surefire HTML report
 mvn test surefire-report:report
 ```
-Report location: `target/site/surefire-report.html`
 
-### ExtentReport:
-After running tests, the ExtentReport is automatically generated at:
+### Docker Execution
+```bash
+# Run everything (emulator + Appium + tests) in containers
+docker-compose up --build
+
+# Run only the Appium emulator (for manual testing)
+docker-compose up appium
+
+# Run tests against already running Appium container
+docker-compose run tests
+
+# Stop and remove containers
+docker-compose down
 ```
-test-output/ExtentReport.html
-```
+
+### View Test Reports
+- **ExtentReport**: `test-output/ExtentReport.html`
+- **Surefire Report**: `target/site/surefire-report.html` (after `mvn surefire-report:report`)
 
 ---
 
@@ -213,6 +226,44 @@ Each test group (Login, Navigation, Feature) runs in its own thread for faster e
 ### 2. Test Report Generation
 - **ExtentReports** — Rich HTML report at `test-output/ExtentReport.html`
 - **Maven Surefire Report** — Standard report via `mvn surefire-report:report`
+
+### 3. Dockerized Appium Setup
+Full containerized environment using `docker-compose.yml`:
+
+```
+┌─────────────────────────────────────────────┐
+│              docker-compose                  │
+│                                              │
+│  ┌──────────────────────┐  ┌──────────────┐ │
+│  │   appium container   │  │ test-runner   │ │
+│  │                      │  │  container    │ │
+│  │  Android Emulator    │◄─┤              │ │
+│  │  Appium Server:4723  │  │  Maven + Java│ │
+│  │  noVNC:6080          │  │  Test Suites  │ │
+│  └──────────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────┘
+```
+
+| Service | Image | Purpose |
+|---------|-------|---------|
+| `appium` | `budtmo/docker-android:emulator_12.0` | Android 12 emulator + Appium server |
+| `tests` | Custom (`Dockerfile`) | Maven test runner |
+
+**Key Features:**
+- Health checks ensure tests wait until Appium is ready
+- noVNC at `http://localhost:6080` to view the emulator screen
+- Volume mounts share APK files and test reports with the host
+- Environment variables (`APPIUM_HOST`, `APPIUM_PORT`) override config for Docker networking
+
+---
+
+## Bonus Features Summary
+
+| Bonus | Status | Details |
+|-------|--------|---------|
+| Parallel Test Execution | ✅ | TestNG `parallel="tests"` with `thread-count="3"` |
+| Test Report Generation | ✅ | ExtentReports HTML + Maven Surefire Reports |
+| Dockerized Appium Setup | ✅ | `docker-compose.yml` with Android emulator + Appium |
 
 ---
 
