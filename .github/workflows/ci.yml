@@ -1,0 +1,44 @@
+name: Mobile Automation CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Maven Project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven (compile only)
+        run: mvn compile -B
+
+      - name: Run Maven test compile
+        run: mvn test-compile -B
+
+      - name: Display build success
+        run: echo "Build completed successfully!"
+
+  # Note: Full test execution requires a connected Android device/emulator
+  # which is not available in standard CI environments.
+  # Tests are verified to compile and the framework is validated.
