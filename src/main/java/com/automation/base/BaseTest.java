@@ -27,9 +27,16 @@ public class BaseTest {
         // Docker support: override Appium URL from environment variables
         String appiumHost = System.getenv("APPIUM_HOST");
         String appiumPort = System.getenv("APPIUM_PORT");
-        if (appiumHost != null && !appiumHost.isEmpty()) {
-            appiumUrl = "http://" + appiumHost + ":" +
-                    (appiumPort != null ? appiumPort : "4723");
+        if (appiumHost != null && !appiumHost.trim().isEmpty()) {
+            int appiumPortNumber = 4723;
+            if (appiumPort != null && !appiumPort.trim().isEmpty()) {
+                try {
+                    appiumPortNumber = Integer.parseInt(appiumPort.trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid APPIUM_PORT '" + appiumPort + "', defaulting to 4723");
+                }
+            }
+            appiumUrl = "http://" + appiumHost.trim() + ":" + appiumPortNumber;
             System.out.println("Using Docker Appium URL: " + appiumUrl);
         }
 
