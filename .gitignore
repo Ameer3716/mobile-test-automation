@@ -26,6 +26,10 @@ replay_pid*
 # Maven build output
 target/
 
+# Test report output
+test-output/
+allure-results/
+
 # IDE files
 .idea/
 *.iml

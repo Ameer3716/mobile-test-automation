@@ -26,6 +26,7 @@ A comprehensive mobile test automation framework for the **SauceLabs My Demo App
 | Selenium | 4.15.0 | WebDriver API (Appium dependency) |
 | UiAutomator2 | Latest | Android automation driver |
 | ExtentReports | 5.1.1 | HTML test report generation |
+| Allure Reports | 2.24.0 | Interactive browser-based test reports |
 | Docker | Latest | Containerized Appium + emulator |
 | GitHub Actions | - | Continuous Integration pipeline |
 | Git | Latest | Version control |
@@ -153,6 +154,36 @@ docker-compose down
 ```
 
 ### View Test Reports
+
+**Option 1 — Allure Report (Interactive, opens in browser — Recommended)**
+```bash
+# Install Allure CLI (one-time)
+npm install -g allure-commandline
+
+# After running tests, launch the interactive report in browser
+allure serve target/allure-results
+```
+
+**Option 2 — ExtentReport (Static HTML)**
+```bash
+# After running tests, open directly in browser
+start test-output/ExtentReport.html       # Windows
+open test-output/ExtentReport.html        # macOS
+```
+
+**Option 3 — One-click Report Script (Windows)**
+```powershell
+# Run tests and auto-open Allure report in browser
+.\run-tests-report.ps1
+
+# Open last report without re-running tests
+.\run-tests-report.ps1 -SkipTests
+
+# Open ExtentReport instead
+.\run-tests-report.ps1 -ExtentOnly
+```
+
+- **Allure Report**: Interactive dashboard at `target/allure-results` (served via `allure serve`)
 - **ExtentReport**: `test-output/ExtentReport.html`
 - **Surefire Report**: `target/site/surefire-report.html` (after `mvn surefire-report:report`)
 
@@ -223,9 +254,24 @@ Configured in `testng.xml`:
 ```
 Each test group (Login, Navigation, Feature) runs in its own thread for faster execution.
 
-### 2. Test Report Generation
-- **ExtentReports** — Rich HTML report at `test-output/ExtentReport.html`
-- **Maven Surefire Report** — Standard report via `mvn surefire-report:report`
+### 2. Test Report Generation (View in Browser — No Docker Needed)
+Three report options available — **no Docker required** to view results:
+
+| Report | How to View | Type |
+|--------|------------|------|
+| **Allure Report** | `allure serve target/allure-results` | Interactive dashboard in browser |
+| **ExtentReport** | Open `test-output/ExtentReport.html` | Static HTML file |
+| **Surefire Report** | `mvn surefire-report:report` → `target/site/surefire-report.html` | Maven standard |
+
+**Quick start:**
+```bash
+# Install Allure CLI (one-time)
+npm install -g allure-commandline
+
+# Run tests and view report in browser
+mvn test
+allure serve target/allure-results
+```
 
 ### 3. Dockerized Appium Setup
 Full containerized environment using `docker-compose.yml`:
@@ -261,9 +307,9 @@ Full containerized environment using `docker-compose.yml`:
 
 | Bonus | Status | Details |
 |-------|--------|---------|
-| Parallel Test Execution | ✅ | TestNG `parallel="tests"` with `thread-count="3"` |
-| Test Report Generation | ✅ | ExtentReports HTML + Maven Surefire Reports |
-| Dockerized Appium Setup | ✅ | `docker-compose.yml` with Android emulator + Appium |
+| Parallel Test Execution | Done | TestNG `parallel="tests"` with `thread-count="3"` |
+| Test Report Generation | Done | Allure Reports (browser) + ExtentReports HTML + Surefire Reports |
+| Dockerized Appium Setup | Done | `docker-compose.yml` with Android emulator + Appium |
 
 ---
 
