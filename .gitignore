@@ -41,3 +41,7 @@ nul
 
 # Temp files
 tmpclaude-*
+
+# Helper scripts (not part of project)
+push-all-issues.ps1
+collaborator-push-issues.ps1
